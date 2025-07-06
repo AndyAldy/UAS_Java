@@ -12,7 +12,7 @@ public class Koneksi {
 
             Class.forName("com.mysql.cj.jdbc.Driver");
             return DriverManager.getConnection(url, user, pass);
-        } catch (Exception e) {
+        } catch (ClassNotFoundException | SQLException e) {
             System.out.println("Koneksi gagal: " + e.getMessage());
             return null;
         }
