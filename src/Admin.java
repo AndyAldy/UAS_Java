@@ -20,6 +20,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.HeadlessException;
 import java.util.concurrent.ExecutionException;
 
@@ -669,95 +670,186 @@ public class Admin extends javax.swing.JFrame {
     }//GEN-LAST:event_txttipe1ActionPerformed
 
     private void bcetakActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bcetakActionPerformed
-    int selectedRow = jTable1.getSelectedRow();
+    Object[] options = {"Cetak Invoice Terpilih", "Cetak Laporan Semua Data", "Batal"};
+    int choice = JOptionPane.showOptionDialog(this, "Silakan pilih opsi pencetakan yang Anda inginkan:", "Pilihan Cetak", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 
-    if (selectedRow == -1) {
-        JOptionPane.showMessageDialog(this, "Silakan pilih data dari tabel yang ingin dicetak.", "Peringatan", JOptionPane.WARNING_MESSAGE);
-        return;
+    String teksUntukPreview = "";
+    String judulPreview = "";
+
+    switch (choice) {
+        case 0: // Opsi "Cetak Invoice Terpilih"
+            if (jTable1.getSelectedRow() == -1) {
+                JOptionPane.showMessageDialog(this, "Silakan pilih dulu data dari tabel.", "Peringatan", JOptionPane.WARNING_MESSAGE);
+                return; // Keluar jika tidak ada yang dipilih
+            }
+            teksUntukPreview = siapkanTeksInvoiceTerpilih();
+            judulPreview = "Preview Invoice";
+            break;
+        case 1: // Opsi "Cetak Laporan Semua Data"
+            teksUntukPreview = siapkanTeksLaporanSemua();
+            judulPreview = "Preview Laporan Semua Data";
+            break;
+        default:
+            return; // Keluar jika memilih batal atau menutup dialog
     }
 
-    String status = jTable1.getValueAt(selectedRow, 7).toString();
-
-    if (!status.equalsIgnoreCase("Dipesan")) {
-        JOptionPane.showMessageDialog(this, "Hanya data dengan status 'Dipesan' yang dapat dicetak sebagai invoice.", "Informasi", JOptionPane.INFORMATION_MESSAGE);
-        return;
+    // Tampilkan jendela preview jika ada teks yang dihasilkan
+    if (teksUntukPreview != null && !teksUntukPreview.isEmpty()) {
+        tampilkanPreviewCetak(teksUntukPreview, judulPreview);
     }
-
-    String id = jTable1.getValueAt(selectedRow, 0).toString();
-    String merk = jTable1.getValueAt(selectedRow, 1).toString();
-    String nama = jTable1.getValueAt(selectedRow, 2).toString();
-    String tipe = jTable1.getValueAt(selectedRow, 3).toString();
-    String warna = jTable1.getValueAt(selectedRow, 4).toString();
-    String harga = jTable1.getValueAt(selectedRow, 5).toString();
-    String tahunValue = jTable1.getValueAt(selectedRow, 6).toString();
-
-    // Panggil metode untuk menampilkan GUI invoice
-    tampilkanInvoice(id, merk, nama, tipe, warna, harga, tahunValue);
 }
-private void tampilkanInvoice(String id, String merk, String nama, String tipe, String warna, String harga, String tahunValue) {
-    JDialog invoiceDialog = new JDialog(this, "Invoice Pemesanan - ID: " + id, true);
-    invoiceDialog.setSize(450, 420);
-    invoiceDialog.setLayout(new BorderLayout());
-    invoiceDialog.setLocationRelativeTo(this);
 
-    JTextArea invoiceTextArea = new JTextArea();
-    invoiceTextArea.setEditable(false);
-    invoiceTextArea.setForeground(Color.black);
-    invoiceTextArea.setBackground(Color.white);
-    invoiceTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-    String tanggalCetak = new SimpleDateFormat("dd MMMM yyyy, HH:mm:ss").format(new Date());
+/**
+ * [BARU] Menampilkan JDialog preview dengan teks yang diberikan.
+ */
+private void tampilkanPreviewCetak(String teks, String judul) {
+    // Membuat dialog baru yang modal (harus ditutup dulu)
+    JDialog previewDialog = new JDialog(this, judul, true);
+    previewDialog.setSize(500, 600);
+    previewDialog.setLocationRelativeTo(this);
+    previewDialog.setLayout(new BorderLayout());
 
+    // Area teks untuk menampilkan preview
+    JTextArea previewTextArea = new JTextArea(teks);
+    previewTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+    previewTextArea.setEditable(false);
+    
+    // Tambahkan scrollbar jika teksnya panjang
+    JScrollPane scrollPane = new JScrollPane(previewTextArea);
+
+    // Panel untuk tombol-tombol
+    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+    
+    JButton printButton = new JButton("✅ Cetak ke Printer");
+    printButton.addActionListener((ActionEvent e) -> {
+        try {
+            // Logika print sekarang ada di sini
+            boolean complete = previewTextArea.print();
+            if (complete) {
+                JOptionPane.showMessageDialog(previewDialog, "Pencetakan Selesai!", "Status", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(previewDialog, "Pencetakan Dibatalkan.", "Status", JOptionPane.WARNING_MESSAGE);
+            }
+        } catch (PrinterException ex) {
+            JOptionPane.showMessageDialog(previewDialog, "Gagal Mencetak: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        previewDialog.dispose(); // Tutup jendela preview setelah mencetak
+    });
+
+    JButton cancelButton = new JButton("❌ Batal");
+    cancelButton.addActionListener((ActionEvent e) -> {
+        previewDialog.dispose(); // Cukup tutup jendela preview
+    });
+
+    buttonPanel.add(cancelButton);
+    buttonPanel.add(printButton);
+
+    // Menambahkan komponen ke dialog
+    previewDialog.add(scrollPane, BorderLayout.CENTER);
+    previewDialog.add(buttonPanel, BorderLayout.SOUTH);
+
+    // Tampilkan dialog
+    previewDialog.setVisible(true);
+}
+
+
+// --- Metode-metode di bawah ini sekarang hanya bertugas menyiapkan String ---
+
+private String siapkanTeksInvoiceTerpilih() {
+    int selectedRow = jTable1.getSelectedRow();
     StringBuilder sb = new StringBuilder();
+    formatDataInvoice(sb, selectedRow);
+    return sb.toString();
+}
+
+private String siapkanTeksLaporanSemua() {
+    int rowCount = jTable1.getRowCount();
+    if (rowCount == 0) {
+        JOptionPane.showMessageDialog(this, "Tabel tidak memiliki data untuk ditampilkan.", "Informasi", JOptionPane.INFORMATION_MESSAGE);
+        return null; // Kembalikan null jika tidak ada data
+    }
+    StringBuilder sb = new StringBuilder();
+    sb.append("         LAPORAN PENJUALAN MOBIL\n");
+    sb.append("========================================================\n\n");
+    for (int i = 0; i < rowCount; i++) {
+        formatDataDetail(sb, i);
+        if (i < rowCount - 1) {
+            sb.append("--------------------------------------------------------\n");
+        }
+    }
+    sb.append("\n========================================================\n");
+    return sb.toString();
+}
+
+/**
+ * [DIPERBAIKI] Metode ini HANYA memformat teks untuk satu invoice lengkap.
+ * Semua kode UI (JDialog, JTextArea) telah dihapus.
+ */
+private void formatDataInvoice(StringBuilder sb, int row) {
+    // Mengambil data dari tabel (sesuaikan indeks kolom jika perlu)
+    String id = jTable1.getValueAt(row, 0).toString();
+    String nama = jTable1.getValueAt(row, 1).toString();
+    String merk = jTable1.getValueAt(row, 2).toString();
+    String tipe = jTable1.getValueAt(row, 3).toString();
+    String warna = jTable1.getValueAt(row, 4).toString();
+    String harga = jTable1.getValueAt(row, 5).toString();
+    String tahun = jTable1.getValueAt(row, 6).toString();
+    String tanggalCetak = new SimpleDateFormat("dd MMMM yyyy, HH:mm").format(new Date());
+
+    // Membangun teks invoice
     sb.append("================================================\n");
-    sb.append("INVOICE PEMESANAN Anda\n");
+    sb.append("              INVOICE PEMESANAN\n");
     sb.append("================================================\n\n");
     sb.append("Tanggal Cetak : ").append(tanggalCetak).append("\n");
     sb.append("ID Pesanan    : ").append(id).append("\n\n");
-    sb.append("---------------- DETAIL MOBIL ----------------\n\n");
+    sb.append("---------------- DETAIL MOBIL ----------------\n");
     sb.append(String.format("%-15s: %s\n", "Nama Mobil", nama));
     sb.append(String.format("%-15s: %s\n", "Merk Mobil", merk));
     sb.append(String.format("%-15s: %s\n", "Tipe Mobil", tipe));
     sb.append(String.format("%-15s: %s\n", "Warna Mobil", warna));
-    sb.append(String.format("%-15s: %s\n", "Tahun Keluaran", tahunValue));
-    sb.append("\n------------------------------------------------\n");
-    sb.append(String.format("%-15s: %s\n", "HARGA Mobil", harga));
+    sb.append(String.format("%-15s: %s\n", "Tahun", tahun));
+    sb.append("------------------------------------------------\n");
+    sb.append(String.format("%-15s: %s\n", "HARGA", harga));
     sb.append("================================================\n\n");
-    sb.append("TERIMA KASIH ATAS PEMBELIAN ANDA\n");
-    sb.append("Car DEALER - Terpercaya & Berkualitas\n");
-    sb.append("\n");
-    sb.append("\n");
-    sb.append("TTD Pembeli: ");
-    sb.append("\n");
-    sb.append("\n");
-    sb.append("\n");
-    sb.append("...............");
+    sb.append("      TERIMA KASIH ATAS PEMBELIAN ANDA\n");
+    sb.append("     Car DEALER - Terpercaya & Berkualitas\n\n\n");
+    sb.append("TTD Pembeli: \n\n\n");
+    sb.append(".......................\n");
+}
 
+/**
+ * [DIPERBAIKI] Metode ini HANYA memformat ringkasan data per baris
+ * untuk laporan "Cetak Semua Data".
+ */
+private void formatDataDetail(StringBuilder sb, int row) {
+    // Mengambil data dari tabel (sesuaikan indeks kolom jika perlu)
+    String id = jTable1.getValueAt(row, 0).toString();
+    String nama = jTable1.getValueAt(row, 1).toString();
+    String merk = jTable1.getValueAt(row, 2).toString();
+    String harga = jTable1.getValueAt(row, 5).toString();
+    
+    sb.append(String.format("ID    : %s\n", id));
+    sb.append(String.format("Mobil : %s (%s)\n", nama, merk));
+    sb.append(String.format("Harga : %s\n", harga));
+}
 
-    invoiceTextArea.setText(sb.toString());
-
-    JButton printButton = new JButton("Cetak ke Printer");
-    printButton.addActionListener((ActionEvent e) -> {
-        try {
-            // Perintah ini akan membuka dialog cetak sistem
-            boolean complete = invoiceTextArea.print();
-            if (complete) {
-                JOptionPane.showMessageDialog(invoiceDialog, "Pencetakan Selesai!", "Status", JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(invoiceDialog, "Pencetakan Dibatalkan.", "Status", JOptionPane.WARNING_MESSAGE);
-            }
-        } catch (PrinterException ex) {
-            JOptionPane.showMessageDialog(invoiceDialog, "Gagal Mencetak: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+/**
+ * Metode ini bertanggung jawab untuk proses pencetakan.
+ * Tidak ada perubahan di sini, sudah benar.
+ */
+private void cetakData(String dataUntukDicetak) {
+    JTextArea textArea = new JTextArea(dataUntukDicetak);
+    textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+    try {
+        boolean complete = textArea.print();
+        if (complete) {
+            JOptionPane.showMessageDialog(this, "Pencetakan Selesai!", "Status", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this, "Pencetakan Dibatalkan.", "Status", JOptionPane.WARNING_MESSAGE);
         }
-    });
-
-    JPanel buttonPanel = new JPanel();
-    buttonPanel.add(printButton);
-
-    invoiceDialog.add(new JScrollPane(invoiceTextArea), BorderLayout.CENTER);
-    invoiceDialog.add(buttonPanel, BorderLayout.SOUTH);
-
-    // Tampilkan dialog invoice
-    invoiceDialog.setVisible(true);
+    } catch (PrinterException ex) {
+        JOptionPane.showMessageDialog(this, "Gagal Mencetak: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+    }
     }//GEN-LAST:event_bcetakActionPerformed
 
     private void setTombolsEnabled(boolean isEnabled) {
