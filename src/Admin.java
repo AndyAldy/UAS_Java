@@ -1,4 +1,3 @@
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -817,8 +816,7 @@ private void formatDataInvoice(StringBuilder sb, int row) {
     sb.append(".......................\n");
 }
 
-/**
- * [DIPERBAIKI] Metode ini HANYA memformat ringkasan data per baris
+/*
  * untuk laporan "Cetak Semua Data".
  */
 private void formatDataDetail(StringBuilder sb, int row) {
