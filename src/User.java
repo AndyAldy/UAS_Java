@@ -1,14 +1,21 @@
+// --- GUI (Graphical User Interface) & Exception ---
 import java.awt.HeadlessException;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
+// --- DATABASE (Java Database Connectivity - JDBC) ---
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+
+// --- MULTITHREADING GUI (Agar UI tidak 'freeze') ---
+import javax.swing.SwingWorker;
+import java.util.concurrent.ExecutionException;
+
+// --- DATA FORMATTING (Angka dan Regional) ---
 import java.text.NumberFormat;
 import java.util.Locale;
-import java.util.concurrent.ExecutionException;
-import javax.swing.JOptionPane;
-import javax.swing.SwingWorker;
-import javax.swing.table.DefaultTableModel;
 
 public class User extends javax.swing.JFrame {
     
@@ -192,7 +199,7 @@ public class User extends javax.swing.JFrame {
                 protected Boolean doInBackground() throws Exception {
                     String sql = "UPDATE mobil_jerman SET Status = 'Dipesan' WHERE ID_mobil = ?";
                     try (Connection con = Koneksi.getKoneksi();
-                         PreparedStatement pst = con.prepareStatement(sql)) {
+                        PreparedStatement pst = con.prepareStatement(sql)) {
                         pst.setInt(1, Integer.parseInt(idMobil));
                         return pst.executeUpdate() > 0;
                     }
@@ -226,7 +233,7 @@ public class User extends javax.swing.JFrame {
      private void jTable1MouseClicked(java.awt.event.MouseEvent evt) {                                     
         int row = jTable1.getSelectedRow();
         if (row != -1){
-            String status = jTable1.getValueAt(row, 6).toString();
+            String status = jTable1.getValueAt(row, 7).toString();
             if (status.equalsIgnoreCase("tersedia")) {
                 bpesan.setEnabled(true);
             } else {

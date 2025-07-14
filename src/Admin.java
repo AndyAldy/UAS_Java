@@ -1,27 +1,35 @@
+// --- GUI (Graphical User Interface) - Komponen Visual dan Tata Letak ---
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.HeadlessException;
+import java.awt.event.ActionEvent;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.table.DefaultTableModel;
+
+// --- DATABASE (Java Database Connectivity - JDBC) ---
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.text.NumberFormat;
-import java.util.Locale;
-import javax.swing.JOptionPane;
+
+// --- MULTITHREADING GUI (Agar UI tidak 'freeze') ---
 import javax.swing.SwingWorker;
-import javax.swing.table.DefaultTableModel;
-import java.awt.BorderLayout;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.print.PrinterException;
+import java.util.concurrent.ExecutionException;
+
+// --- DATA FORMATTING (Angka, Tanggal, dan Waktu) ---
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import java.awt.Color;
-import java.awt.FlowLayout;
-import java.awt.HeadlessException;
-import java.util.concurrent.ExecutionException;
+import java.util.Locale;
+
+// --- PRINTING (Fungsi untuk Mencetak) ---
+import java.awt.print.PrinterException;
 
 public class Admin extends javax.swing.JFrame {
 
@@ -559,8 +567,8 @@ public class Admin extends javax.swing.JFrame {
     }//GEN-LAST:event_bbaruActionPerformed
 
     private void btambahActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btambahActionPerformed
-         String namaInput = txtnama.getText().trim();
-         String warnaInput = txtnama.getText().trim();
+        String namaInput = txtnama.getText().trim();
+        String warnaInput = txtnama.getText().trim();
         String hargaInput = harga.getText().trim();
         String tahunInput = tahun.getText().trim();
         long hargaValue;
@@ -600,7 +608,7 @@ public class Admin extends javax.swing.JFrame {
                     pst.setString(4, warnaInput);
                     pst.setLong(5, hargaValue);
                     pst.setInt(6, tahunValue);
-                    pst.setString(6, "tersedia");
+                    pst.setString(7, "tersedia");
                     Thread.sleep(2000);
                     return pst.executeUpdate() > 0;
                 }
@@ -753,7 +761,6 @@ private void tampilkanPreviewCetak(String teks, String judul) {
 
 
 // --- Metode-metode di bawah ini sekarang hanya bertugas menyiapkan String ---
-
 private String siapkanTeksInvoiceTerpilih() {
     int selectedRow = jTable1.getSelectedRow();
     StringBuilder sb = new StringBuilder();
@@ -780,8 +787,7 @@ private String siapkanTeksLaporanSemua() {
     return sb.toString();
 }
 
-/**
- * [DIPERBAIKI] Metode ini HANYA memformat teks untuk satu invoice lengkap.
+/*
  * Semua kode UI (JDialog, JTextArea) telah dihapus.
  */
 private void formatDataInvoice(StringBuilder sb, int row) {
