@@ -54,7 +54,7 @@ public class Admin extends javax.swing.JFrame {
     
     public void terimaPermintaanDariUser(String idMobil, String merk, String nama, String warna){
         JOptionPane.showMessageDialog(this,
-                "User meminta informasi untuk Mobil: \nID: " + idMobil + "\nMerk: " + merk + "\nNama: " + nama + "\nWarna" + warna,
+                "User meminta informasi untuk Mobil: \nID: " + idMobil + "\nMerk: " + merk + "\nNama: " + nama + "\nWarna: " + warna,
                 "Permintaan Info dari User",
                 JOptionPane.INFORMATION_MESSAGE);
     }
@@ -568,7 +568,7 @@ public class Admin extends javax.swing.JFrame {
 
     private void btambahActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btambahActionPerformed
         String namaInput = txtnama.getText().trim();
-        String warnaInput = txtnama.getText().trim();
+        String warnaInput = txtwarna.getText().trim();
         String hargaInput = harga.getText().trim();
         String tahunInput = tahun.getText().trim();
         long hargaValue;

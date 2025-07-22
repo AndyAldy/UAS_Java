@@ -185,10 +185,10 @@ public class User extends javax.swing.JFrame {
         final String idMobil = jTable1.getValueAt(selectedRow, 0).toString();
         final String merk = jTable1.getValueAt(selectedRow, 1).toString();
         final String nama = jTable1.getValueAt(selectedRow, 2).toString();
-        final String warna = jTable1.getValueAt(selectedRow, 3).toString();
+        final String warna = jTable1.getValueAt(selectedRow, 4).toString();
 
         int konfirmasi = JOptionPane.showConfirmDialog(this, 
-                "Anda yakin ingin memesan mobil " + merk + " " + nama + "?" + warna + "?", 
+                "Anda yakin ingin memesan mobil " + merk + " " + nama + " " + warna + "?", 
                 "Konfirmasi Pesanan", 
                 JOptionPane.YES_NO_OPTION);
 
